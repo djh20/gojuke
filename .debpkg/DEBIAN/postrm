@@ -1,0 +1,5 @@
+#!/bin/bash
+userdel jukebox
+systemctl daemon-reload
+
+exit 0
