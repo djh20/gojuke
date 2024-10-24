@@ -1,6 +1,2 @@
 #!/bin/bash
-systemctl stop jukebox-player.service
-
-systemctl disable jukebox-player.service
-
 exit 0

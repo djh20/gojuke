@@ -1,4 +1,0 @@
-fastapi[standard]==0.115.0
-# uvicorn[standard]==0.29.0
-# redis[hiredis]==5.0.3
-# python-dotenv==1.0.1

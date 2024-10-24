@@ -1,5 +1,8 @@
-__pycache__/
-node_modules/
-frontend-dist/
 .vscode/
+
+build/
+dist/
+*.exe
+
 .env
+env.*

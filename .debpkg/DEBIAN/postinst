@@ -1,21 +1,2 @@
 #!/bin/bash
-# useradd jukebox # Create user specifically for this application
-
-python -m venv /opt/jukebox/.venv
-/opt/jukebox/.venv/bin/pip install -r /opt/jukebox/requirements.txt # Install python packages
-
-# usermod -a -G audio jukebox
-# mkdir -p /var/lib/jukebox
-# chown jukebox:jukebox /var/lib/jukebox
-
-# Allow python to use port 80
-PYTHON_PATH=$(readlink -f /usr/bin/python)
-setcap 'cap_net_bind_service=+ep' "$PYTHON_PATH"
-
-# Set services to start on boot
-systemctl enable jukebox-player.service
-
-# Start services
-systemctl start jukebox-player.service
-
 exit 0

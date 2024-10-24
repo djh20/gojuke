@@ -1,2 +1,2 @@
-# Jukebox
+# GoJuke
 Work in progress

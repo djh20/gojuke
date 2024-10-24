@@ -10,79 +10,32 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
+    env:
+      BUILD_NAME: ${{ github.event.repository.name }}-${{ github.ref }}-${{ matrix.arch }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Use Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Go
+        uses: actions/setup-go@v4
         with:
-          node-version: '20.x'
+          go-version: '1.23.2'
 
-      - name: Build Frontend
-        working-directory: ./frontend
+      - name: Install VLC
         run: |
-          npm ci
-          npm run build
+          sudo apt-get update
+          sudo apt-get -y install libvlc-dev vlc-plugin-base
 
-      - name: Prepare Package
-        run: |
-          chmod +x .debpkg/DEBIAN/*
-          rm -rf frontend
-          mkdir -p .debpkg/usr/share/jukebox
-          mv * .debpkg/usr/share/jukebox
-
-      - name: Build Package
-        uses: jiro4989/build-deb-action@v3
-        id: build_package
-        with:
-          package: jukebox
-          package_root: .debpkg
-          maintainer: djh20
-          version: ${{ github.ref }}
-          arch: all
-          depends: python3 (>= 3.11.0), python3-pip (>= 23.0.0)
-          desc: Jukebox
-
-      # - name: Format Package
-      #   run: |
-      #     mv ${{ steps.build_package.outputs.file_name }} 
+      - name: Build
+        env:
+          GOARCH: ${{ matrix.arch }}
+        run: go build -o dist/${{ env.BUILD_NAME }} -v ./...
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.ref_name }}
-          path: ${{ steps.build_package.outputs.file_name }}
-
-  release:  
-    name: Release
-    runs-on: ubuntu-latest
-    needs: [build]
-    if: ${{ startsWith(github.ref, 'refs/tags/') }}
-    permissions:
-      contents: write
-    steps:
-      - name: Download Artifact
-        uses: actions/download-artifact@v4
-        with:
-          merge-multiple: true
-          path: ./dist
-
-      - name: Create Release Draft
-        uses: softprops/action-gh-release@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          draft: true
-          generate_release_notes: true
-          files: |
-            ./dist/*
-            
-      # - name: Create Release Draft
-      #   uses: svenstaro/upload-release-action@v2
-      #   with:
-      #     repo_token: ${{ secrets.GITHUB_TOKEN }}
-      #     file: ${{ steps.build_package.outputs.file_name }}
-      #     asset_name: ${{ github.event.repository.name }}-${{ github.ref_name }}.deb
-      #     tag: ${{ github.ref }}
-      #     draft: true
-      #     overwrite: true
+          name: ${{ env.BUILD_NAME }}
+          path: ./dist/*
