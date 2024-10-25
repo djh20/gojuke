@@ -10,12 +10,8 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [amd64, arm64]
     env:
-      BUILD_NAME: ${{ github.event.repository.name }}-${{ github.ref }}-${{ matrix.arch }}
+      BUILD_NAME: ${{ github.event.repository.name }}-${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v4
 
@@ -29,10 +25,19 @@ jobs:
           sudo apt-get update
           sudo apt-get -y install libvlc-dev vlc-plugin-base
 
-      - name: Build
+      - name: Install GCC for ARM64
+        run: |
+          sudo apt-get install gcc-aarch64-linux-gnu
+
+      - name: Build for AMD64
+        run: go build -o dist/${{ env.BUILD_NAME }}-amd64 -v
+
+      - name: Build for ARM64
         env:
-          GOARCH: ${{ matrix.arch }}
-        run: go build -o dist/${{ env.BUILD_NAME }} -v ./...
+          CC: aarch64-linux-gnu-gcc
+          GOARCH: arm64
+          CGO_ENABLED: 1
+        run: go build -o dist/${{ env.BUILD_NAME }}-arm64 -v
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
