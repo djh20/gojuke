@@ -28,6 +28,7 @@ jobs:
       - name: Install GCC for ARM64
         run: |
           sudo apt-get install gcc-aarch64-linux-gnu
+          sudo cp -r /usr/include/vlc /usr/include/aarch64-linux-gnu/
 
       - name: Build for AMD64
         run: go build -o dist/${{ env.BUILD_NAME }}-amd64 -v
