@@ -1,0 +1,12 @@
+[Unit]
+Description=GoJuke
+After=network.target sound.target
+ConditionUser=!root
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/gojuke
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
