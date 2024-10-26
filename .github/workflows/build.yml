@@ -29,13 +29,16 @@ jobs:
           sudo add-apt-repository -yn "deb [arch=arm64] http://ports.ubuntu.com/ $codename-backports main multiverse universe"
           sudo add-apt-repository -yn "deb [arch=arm64] http://ports.ubuntu.com/ $codename-updates main multiverse universe"
 
+      - name: Apt Update
+        continue-on-error: true # This is stupid - temporary solution.
+        run: sudo apt-get update
+
       - name: Install GCC for ARM64
         run: |
           sudo apt-get install gcc-aarch64-linux-gnu
 
       - name: Install VLC
         run: |
-          sudo apt-get update
           sudo apt-get install libvlc-dev libvlc-dev:arm64
 
       - name: Build for AMD64
