@@ -102,9 +102,6 @@ jobs:
           chmod +x .debpkg/DEBIAN/*
           mkdir -p .debpkg/usr/bin
           cp dist/${{ env.BUILD_NAME }}-${{ matrix.arch }} .debpkg/usr/bin/
-
-      - name: Display GitHub Context
-        run: echo ${{ toJson(github) }}
       
       - name: Build Debian Package
         uses: jiro4989/build-deb-action@v3
@@ -112,10 +109,9 @@ jobs:
         with:
           package: ${{ github.event.repository.name }}
           package_root: .debpkg
-          maintainer: djh20
+          maintainer: ${{ github.repository_owner }}
           version: ${{ env.BUILD_VERSION }}
           arch: ${{ matrix.arch }}
-          depends: 
           desc: Open-Source Jukebox Software
 
       - name: Rename Debian Package
