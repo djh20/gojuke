@@ -101,7 +101,7 @@ jobs:
         run: |
           chmod +x .debpkg/DEBIAN/*
           mkdir -p .debpkg/usr/bin
-          cp dist/${{ env.BUILD_NAME }}-${{ matrix.arch }} .debpkg/usr/bin/
+          cp dist/${{ env.BUILD_NAME }}-${{ matrix.arch }} .debpkg/usr/bin/openjukebox
       
       - name: Build Debian Package
         uses: jiro4989/build-deb-action@v3
