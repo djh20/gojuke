@@ -1,1 +1,11 @@
-.list {}
+.list {
+  display: flex;
+  height: 570px;
+}
+
+.tracks {
+  height: 100%;
+  padding-right: 5px;
+  overflow-y: auto;
+  flex: 1;
+}

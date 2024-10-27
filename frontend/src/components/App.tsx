@@ -4,7 +4,7 @@ import '@fontsource/open-sans/700.css';
 import TrackList from './TrackList';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import DataProvider from './DataProvider';
-import PlaybackControls from './PlaybackControls';
+import PlaybackControls from './playback/PlaybackControls';
 
 const queryClient = new QueryClient();
 
