@@ -10,7 +10,7 @@ interface PlaybackControlButtonProps {
 
 function PlaybackControlButton(props: PlaybackControlButtonProps) {
   return (
-    <div className={css.button} style={{backgroundColor: props.color}} onClick={props.onClick}>
+    <div className={css.button} style={{borderColor: props.color}} onClick={props.onClick}>
       {props.icon}
       <div className={css.label}>{props.children}</div>
     </div>

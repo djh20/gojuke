@@ -19,21 +19,21 @@ function PlaybackControls() {
   return (
     <div className={css.controls}>
       <PlaybackControlButton 
-        color="#f5c118" 
+        color="#e34540" 
         icon={<BsFillSkipForwardFill />} 
         onClick={skipTrack}>
         Skip
       </PlaybackControlButton>
 
       <PlaybackControlButton 
-        color="#3dcaf5" 
+        color="#f5c118" 
         icon={<BsVolumeDownFill />}
         onClick={() => adjustVolume(-10)}>
         Vol -
       </PlaybackControlButton>
 
       <PlaybackControlButton 
-        color="#3dcaf5" 
+        color="#f5c118" 
         icon={<BsVolumeUpFill />}
         onClick={() => adjustVolume(10)}>
         Vol +
