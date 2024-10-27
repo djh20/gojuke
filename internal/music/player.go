@@ -63,6 +63,12 @@ func runPlayer() {
 }
 
 func addTrackToQueue(track Track) {
+	for _, queuedTrack := range Queue {
+		if queuedTrack.ID == track.ID {
+			return
+		}
+	}
+
 	log.Printf("Adding %s to queue", track.Name)
 	Queue = append(Queue, track)
 
