@@ -19,9 +19,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Change Directory
-        run: cd frontend
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -29,15 +26,18 @@ jobs:
 
       - name: Install Dependencies
         uses: bahmutov/npm-install@v1
+        with:
+          working-directory: frontend
 
       - name: Vite Build
+        working-directory: frontend
         run: npm run build
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.BUILD_NAME }}-frontend
-          path: dist/
+          path: frontend/dist/
 
   build_binary:
     name: Build Binary
