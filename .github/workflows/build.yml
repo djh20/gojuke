@@ -8,52 +8,112 @@ on:
 
 env:
   BUILD_NAME: ${{ github.event.repository.name }}-${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.run_id }}
+  BUILD_VERSION: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('0.0.0-{0}', github.run_id) }}
+  GO_VERSION: '1.23.2'
+  NODE_VERSION: '20.x'
 
 jobs:
-  build:
-    name: Build
+  build_frontend:
+    name: Build Frontend
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v4
+      - name: Change Directory
+        run: cd frontend
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          go-version: '1.23.2'
+          node-version: ${{ env.NODE_VERSION }}
 
-      - name: Add ARM64 Repositories
-        run: |
-          codename=$(lsb_release -s -c)
-          sudo dpkg --add-architecture arm64
-          sudo add-apt-repository -yn "deb [arch=arm64] http://ports.ubuntu.com/ $codename main multiverse universe"
-          sudo add-apt-repository -yn "deb [arch=arm64] http://ports.ubuntu.com/ $codename-security main multiverse universe"
-          sudo add-apt-repository -yn "deb [arch=arm64] http://ports.ubuntu.com/ $codename-backports main multiverse universe"
-          sudo add-apt-repository -yn "deb [arch=arm64] http://ports.ubuntu.com/ $codename-updates main multiverse universe"
+      - name: Install Dependencies
+        uses: bahmutov/npm-install@v1
 
-      - name: Apt Update
-        continue-on-error: true # This is stupid - temporary solution.
-        run: sudo apt-get update
-
-      - name: Install GCC for ARM64
-        run: |
-          sudo apt-get install gcc-aarch64-linux-gnu
-
-      - name: Install VLC
-        run: |
-          sudo apt-get install libvlc-dev libvlc-dev:arm64
-
-      - name: Build for AMD64
-        run: go build -o dist/${{ env.BUILD_NAME }}-amd64 -v
-
-      - name: Build for ARM64
-        env:
-          CC: aarch64-linux-gnu-gcc
-          GOARCH: arm64
-          CGO_ENABLED: 1
-        run: go build -o dist/${{ env.BUILD_NAME }}-arm64 -v
+      - name: Vite Build
+        run: npm run build
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.BUILD_NAME }}
-          path: ./dist/*
+          name: ${{ env.BUILD_NAME }}-frontend
+          path: dist/
+
+  build_binary:
+    name: Build Binary
+    needs: build_frontend
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
+        include:
+          - arch: amd64
+            gcc_package: gcc
+            gcc_command: gcc
+            ports: false
+          
+          - arch: arm64
+            gcc_package: gcc-aarch64-linux-gnu
+            gcc_command: aarch64-linux-gnu-gcc
+            ports: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Frontend
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.BUILD_NAME }}-frontend
+          path: frontend/dist
+          merge-multiple: true
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Add Ubuntu Ports Repository
+        if: ${{ matrix.ports }}
+        run: |
+          codename=$(lsb_release -s -c)
+          sudo dpkg --add-architecture ${{ matrix.arch }}
+          sudo add-apt-repository -yn "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ $codename main multiverse universe"
+          sudo add-apt-repository -yn "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ $codename-security main multiverse universe"
+          sudo add-apt-repository -yn "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ $codename-backports main multiverse universe"
+          sudo add-apt-repository -yn "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ $codename-updates main multiverse universe"
+
+      - name: Update Package Index
+        continue-on-error: true
+        run: sudo apt-get update
+
+      - name: Install Build Tools
+        run: sudo apt-get install ${{ matrix.gcc_package }}
+
+      - name: Install VLC
+        run: sudo apt-get install libvlc-dev:${{ matrix.arch }}
+
+      - name: Build Binary
+        env:
+          CC: ${{ matrix.gcc_command }}
+          GOARCH: ${{ matrix.arch }}
+          CGO_ENABLED: 1
+        run: go build -o dist/${{ env.BUILD_NAME }}-${{ matrix.arch }} -v
+      
+      # - name: Build Debian Package
+      #   uses: jiro4989/build-deb-action@v3
+      #   id: build_package
+      #   with:
+      #     package: ${{ github.event.repository.name }}
+      #     package_root: .debpkg
+      #     maintainer: ${{ github.event.repository.owner.name }}
+      #     version: ${{ env.BUILD_VERSION }}
+      #     arch: ${{ matrix.arch }}
+      #     desc: Open-Source Jukebox Software
+
+      # - name: Rename Debian Package
+      #   run: mv ${{ steps.build_package.outputs.file_name }} dist/${{ env.BUILD_NAME }}-${{ matrix.arch }}.deb
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.BUILD_NAME }}-${{ matrix.arch }}
+          path: dist/
