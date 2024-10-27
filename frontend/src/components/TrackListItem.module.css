@@ -1,0 +1,42 @@
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  height: 60px;
+  padding: 8px 15px;
+  margin-bottom: 12px;
+  background-color: #f8f8f8;
+  border: 1px solid #949494;
+  border-radius: 10px;
+
+  cursor: pointer;
+  user-select: none;
+  font-size: 18px;
+}
+
+.title {
+  font-weight: 600;
+}
+
+.playButton {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 20px;
+  background-color: #7de266;
+  border-radius: 10px;
+}
+
+.playButton.disabled {
+  background-color: #808080;
+  opacity: 0.5;
+}
+
+.playIcon {
+  margin-right: 5px;
+}
+
+.playLabel {
+  font-weight: bold;
+}

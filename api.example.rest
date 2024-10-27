@@ -1,0 +1,36 @@
+@host = localhost
+
+###
+
+GET http://{{host}}/api/tracks
+
+###
+
+POST http://{{host}}/api/playback/queue
+Content-Type: application/json
+
+{
+  "trackName": "Track 1"
+}
+
+###
+
+POST http://{{host}}/api/playback/queue
+Content-Type: application/json
+
+{
+  "trackId": "4031c885-2796-4b87-b801-d39f8af3f10f"
+}
+
+###
+
+POST http://{{host}}/api/playback/skip
+
+###
+
+POST http://{{host}}/api/playback/volume
+Content-Type: application/json
+
+{
+  "volume": 50
+}
