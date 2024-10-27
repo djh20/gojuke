@@ -8,22 +8,50 @@ import (
 )
 
 func registerApiRoutes() {
-	router.POST("/api/queue", func(c *gin.Context) {
-		json := queueAddRequest{}
+	router.GET("/api/tracks", handleTracksRequest)
 
-		if c.Bind(&json) == nil {
-			c.Status(http.StatusOK)
+	router.POST("/api/playback/queue", handleQueueRequest)
+	router.POST("/api/playback/volume", handleVolumeRequest)
+	router.POST("/api/playback/skip", handleSkipRequest)
+}
 
-			track := music.Track{
-				FileName: json.Track,
-			}
+func handleTracksRequest(c *gin.Context) {
+	c.JSON(http.StatusOK, music.Tracks)
+}
 
-			music.AddTrackToQueue(track)
+func handleQueueRequest(c *gin.Context) {
+	json := QueueAddRequest{}
+
+	c.Status(http.StatusBadRequest)
+
+	if c.Bind(&json) == nil {
+		var track *music.Track
+
+		if json.TrackID != "" {
+			track = music.GetTrackById(json.TrackID)
+		} else if json.TrackName != "" {
+			track = music.GetTrackByName(json.TrackName)
 		}
-	})
 
-	router.POST("/api/playback/skip", func(c *gin.Context) {
-		music.Skip()
+		if track != nil {
+			music.AddTrackToQueue(*track)
+			c.Status(http.StatusOK)
+		}
+	}
+}
+
+func handleVolumeRequest(c *gin.Context) {
+	json := VolumeSetRequest{}
+
+	c.Status(http.StatusBadRequest)
+
+	if c.Bind(&json) == nil {
+		music.SetVolume(json.Volume)
 		c.Status(http.StatusOK)
-	})
+	}
+}
+
+func handleSkipRequest(c *gin.Context) {
+	music.Skip()
+	c.Status(http.StatusOK)
 }

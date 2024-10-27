@@ -38,7 +38,7 @@ func runPlayer() {
 
 	// Register the media end reached event with the event manager.
 	eventCallback := func(event vlc.Event, userData interface{}) {
-		skipChannel <- PlaybackSkipEvent{}
+		skipChannel <- struct{}{}
 	}
 
 	eventID, err := manager.Attach(vlc.MediaPlayerEndReached, eventCallback, nil)
@@ -52,8 +52,10 @@ func runPlayer() {
 		case track := <-queueChannel:
 			addTrackToQueue(track)
 
+		case volume := <-volumeChannel:
+			player.SetVolume(volume)
+
 		case <-skipChannel:
-			log.Println("Skipping track")
 			playNextTrack()
 
 		}
@@ -61,7 +63,7 @@ func runPlayer() {
 }
 
 func addTrackToQueue(track Track) {
-	log.Printf("Appending %s to queue", track.FileName)
+	log.Printf("Adding %s to queue", track.Name)
 	Queue = append(Queue, track)
 
 	if CurrentTrack == nil {
@@ -84,17 +86,15 @@ func playNextTrack() {
 	if len(Queue) > 0 {
 		track, Queue = Queue[0], Queue[1:]
 
-		mediaPath := filepath.Join(tracksDirectory, track.FileName)
-
 		var err error
-		media, err = player.LoadMediaFromPath(mediaPath)
+		filePath := filepath.Join(tracksDirectory, track.FileName)
+		media, err = player.LoadMediaFromPath(filePath)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		log.Println("Playing", track.FileName)
+		log.Printf("Now playing %s", track.Name)
 
-		player.SetVolume(70)
 		player.Play()
 
 		CurrentTrack = &track
