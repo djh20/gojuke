@@ -1,11 +1,11 @@
 [Unit]
-Description=GoJuke
+Description=OpenJukebox
 After=network.target sound.target
 ConditionUser=!root
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/gojuke
+ExecStart=/usr/bin/openjukebox
 Restart=on-failure
 
 [Install]

@@ -14,14 +14,14 @@ func Init() {
 		log.Fatal(err)
 	}
 
-	DataDirectory = filepath.Join(homeDir, "gojuke")
+	DataDirectory = filepath.Join(homeDir, "openjukebox")
 
 	err = os.Mkdir(DataDirectory, os.ModePerm)
 	if err != nil && !os.IsExist(err) {
 		log.Fatal(err)
 	}
 
-	log.Println("Found data directory:", DataDirectory)
+	log.Println("Data directory:", DataDirectory)
 }
 
 func GetDataSubDirectory(relativePath string) string {

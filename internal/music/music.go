@@ -1,7 +1,7 @@
 package music
 
 import (
-	"github.com/djh20/gojuke/internal/storage"
+	"github.com/djh20/openjukebox/internal/storage"
 )
 
 var CurrentTrack *Track

@@ -1,13 +1,17 @@
 package web
 
 import (
-	"github.com/djh20/gojuke/internal/config"
+	"embed"
+	"log"
+
+	"github.com/djh20/openjukebox/internal/config"
+	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 )
 
 var router *gin.Engine
 
-func Init() {
+func Init(frontend embed.FS) {
 	if config.DebugMode {
 		gin.SetMode(gin.DebugMode)
 	} else {
@@ -16,10 +20,12 @@ func Init() {
 
 	router = gin.Default()
 	router.SetTrustedProxies(nil)
+	router.Use(static.Serve("/", static.EmbedFolder(frontend, "frontend/dist")))
 
 	registerApiRoutes()
 }
 
 func Run() {
+	log.Println("Listening on", config.ListenAddress)
 	router.Run(config.ListenAddress)
 }

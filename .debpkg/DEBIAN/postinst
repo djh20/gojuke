@@ -1,2 +1,6 @@
 #!/bin/bash
+
+# Allow application to use port 80
+setcap 'cap_net_bind_service=+ep' /usr/bin/openjukebox
+
 exit 0

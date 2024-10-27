@@ -3,7 +3,7 @@ package web
 import (
 	"net/http"
 
-	"github.com/djh20/gojuke/internal/music"
+	"github.com/djh20/openjukebox/internal/music"
 	"github.com/gin-gonic/gin"
 )
 
