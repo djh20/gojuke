@@ -9,7 +9,6 @@ on:
 env:
   BUILD_NAME: ${{ github.event.repository.name }}-${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.run_id }}
   BUILD_VERSION: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('0.0.0-{0}', github.run_id) }}
-  GO_VERSION: '1.23.2'
   NODE_VERSION: '20.x'
 
 jobs:
@@ -56,6 +55,8 @@ jobs:
             gcc_package: gcc-aarch64-linux-gnu
             gcc_command: aarch64-linux-gnu-gcc
             ports: true
+    env:
+      BUILD_NAME_WITH_ARCH: ${{ env.BUILD_NAME }}-${{ matrix.arch }}
     steps:
       - uses: actions/checkout@v4
 
@@ -67,9 +68,9 @@ jobs:
           merge-multiple: true
 
       - name: Setup Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
-          go-version: ${{ env.GO_VERSION }}
+          go-version-file: go.mod
 
       - name: Add Ubuntu Ports Repository
         if: ${{ matrix.ports }}
@@ -96,24 +97,30 @@ jobs:
           CC: ${{ matrix.gcc_command }}
           GOARCH: ${{ matrix.arch }}
           CGO_ENABLED: 1
-        run: go build -o dist/${{ env.BUILD_NAME }}-${{ matrix.arch }} -v
-      
-      # - name: Build Debian Package
-      #   uses: jiro4989/build-deb-action@v3
-      #   id: build_package
-      #   with:
-      #     package: ${{ github.event.repository.name }}
-      #     package_root: .debpkg
-      #     maintainer: ${{ github.event.repository.owner.name }}
-      #     version: ${{ env.BUILD_VERSION }}
-      #     arch: ${{ matrix.arch }}
-      #     desc: Open-Source Jukebox Software
+        run: go build -o dist/${{ env.BUILD_NAME_WITH_ARCH }} -v
 
-      # - name: Rename Debian Package
-      #   run: mv ${{ steps.build_package.outputs.file_name }} dist/${{ env.BUILD_NAME }}-${{ matrix.arch }}.deb
+      - name: Prepare Debian Package
+        run: |
+          chmod +x .debpkg/DEBIAN/*
+          mkdir -p .debpkg/usr/bin
+          cp dist/${{ env.BUILD_NAME_WITH_ARCH }} .debpkg/usr/bin/
+      
+      - name: Build Debian Package
+        uses: jiro4989/build-deb-action@v3
+        id: build_package
+        with:
+          package: ${{ github.event.repository.name }}
+          package_root: .debpkg
+          maintainer: ${{ github.event.repository.owner.name }}
+          version: ${{ env.BUILD_VERSION }}
+          arch: ${{ matrix.arch }}
+          desc: Open-Source Jukebox Software
+
+      - name: Rename Debian Package
+        run: mv ${{ steps.build_package.outputs.file_name }} dist/${{ env.BUILD_NAME_WITH_ARCH }}.deb
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.BUILD_NAME }}-${{ matrix.arch }}
+          name: ${{ env.BUILD_NAME_WITH_ARCH }}
           path: dist/
