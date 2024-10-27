@@ -55,8 +55,6 @@ jobs:
             gcc_package: gcc-aarch64-linux-gnu
             gcc_command: aarch64-linux-gnu-gcc
             ports: true
-    env:
-      BUILD_NAME_WITH_ARCH: ${{ env.BUILD_NAME }}-${{ matrix.arch }}
     steps:
       - uses: actions/checkout@v4
 
@@ -97,13 +95,13 @@ jobs:
           CC: ${{ matrix.gcc_command }}
           GOARCH: ${{ matrix.arch }}
           CGO_ENABLED: 1
-        run: go build -o dist/${{ env.BUILD_NAME_WITH_ARCH }} -v
+        run: go build -o dist/${{ env.BUILD_NAME }}-${{ matrix.arch }} -v
 
       - name: Prepare Debian Package
         run: |
           chmod +x .debpkg/DEBIAN/*
           mkdir -p .debpkg/usr/bin
-          cp dist/${{ env.BUILD_NAME_WITH_ARCH }} .debpkg/usr/bin/
+          cp dist/${{ env.BUILD_NAME }}-${{ matrix.arch }} .debpkg/usr/bin/
       
       - name: Build Debian Package
         uses: jiro4989/build-deb-action@v3
@@ -117,10 +115,10 @@ jobs:
           desc: Open-Source Jukebox Software
 
       - name: Rename Debian Package
-        run: mv ${{ steps.build_package.outputs.file_name }} dist/${{ env.BUILD_NAME_WITH_ARCH }}.deb
+        run: mv ${{ steps.build_package.outputs.file_name }} dist/${{ env.BUILD_NAME }}-${{ matrix.arch }}.deb
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.BUILD_NAME_WITH_ARCH }}
+          name: ${{ env.BUILD_NAME }}-${{ matrix.arch }}
           path: dist/
