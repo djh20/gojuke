@@ -3,18 +3,32 @@ name: Build
 on:
   push:
     tags:
-      - '*.*.*'
+      - 'v*.*.*'
   workflow_dispatch:
 
 env:
-  BUILD_NAME: ${{ github.event.repository.name }}-${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || github.run_id }}
-  BUILD_VERSION: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('0.0.0-{0}', github.run_id) }}
   NODE_VERSION: '20.x'
+  RUNNER_OS: ubuntu-22.04
 
 jobs:
+  versioning:
+    name: Versioning
+    runs-on: ${{ env.RUNNER_OS }}
+    env:
+      TAG: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('v0.0.0-{0}', github.run_id) }}
+    outputs:
+      version: ${{ steps.format_version.outputs.version }}
+      build_name: ${{ github.event.repository.name }}_${{ steps.format_version.outputs.version }}
+    steps:
+      - name: Format Version
+        id: format_version
+        run: |
+          echo "version=${TAG#v}" >> $GITHUB_OUTPUT
+
   build_frontend:
     name: Build Frontend
-    runs-on: ubuntu-22.04
+    needs: versioning
+    runs-on: ${{ env.RUNNER_OS }}
     steps:
       - uses: actions/checkout@v4
 
@@ -35,13 +49,13 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.BUILD_NAME }}-frontend
+          name: ${{ jobs.versioning.outputs.build_name }}_frontend
           path: frontend/dist/
 
   build_binary:
     name: Build Binary
     needs: build_frontend
-    runs-on: ubuntu-22.04
+    runs-on: ${{ env.RUNNER_OS }}
     strategy:
       matrix:
         arch: [amd64, arm64]
@@ -55,13 +69,16 @@ jobs:
             gcc_package: gcc-aarch64-linux-gnu
             gcc_command: aarch64-linux-gnu-gcc
             ports: true
+    env:
+      BIN_NAME: ${{ jobs.versioning.outputs.build_name }}_${{ matrix.arch }}
+      ARTIFACT_NAME: ${{ jobs.versioning.outputs.build_name }}_bin_${{ matrix.arch }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Download Frontend
         uses: actions/download-artifact@v4
         with:
-          name: ${{ env.BUILD_NAME }}-frontend
+          name: ${{ jobs.versioning.outputs.build_name }}_frontend
           path: frontend/dist
           merge-multiple: true
 
@@ -95,13 +112,13 @@ jobs:
           CC: ${{ matrix.gcc_command }}
           GOARCH: ${{ matrix.arch }}
           CGO_ENABLED: 1
-        run: go build -o dist/${{ env.BUILD_NAME }}-${{ matrix.arch }} -v
+        run: go build -o dist/${{ env.BIN_NAME }} -v
 
       - name: Prepare Debian Package
         run: |
           chmod +x .debpkg/DEBIAN/*
           mkdir -p .debpkg/usr/bin
-          cp dist/${{ env.BUILD_NAME }}-${{ matrix.arch }} .debpkg/usr/bin/openjukebox
+          cp dist/${{ env.BIN_NAME }} .debpkg/usr/bin/openjukebox
       
       - name: Build Debian Package
         uses: jiro4989/build-deb-action@v3
@@ -110,15 +127,15 @@ jobs:
           package: ${{ github.event.repository.name }}
           package_root: .debpkg
           maintainer: ${{ github.repository_owner }}
-          version: ${{ env.BUILD_VERSION }}
+          version: ${{ jobs.versioning.outputs.version }}
           arch: ${{ matrix.arch }}
           desc: Open-Source Jukebox Software
 
       - name: Rename Debian Package
-        run: mv ${{ steps.build_package.outputs.file_name }} dist/${{ env.BUILD_NAME }}-${{ matrix.arch }}.deb
+        run: mv ${{ steps.build_package.outputs.file_name }} dist/${{ env.BIN_NAME }}.deb
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.BUILD_NAME }}-${{ matrix.arch }}
+          name: ${{ env.ARTIFACT_NAME }}
           path: dist/
