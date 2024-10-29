@@ -47,6 +47,7 @@ download_url=$(echo $release | grep -o "https:[^\"]*_$arch\.deb")
 
 if [ "$download_url" != "" ]; then
   echo "Downloading package..."
+  rm /tmp/$package.deb 2>/dev/null
   wget -O /tmp/$package.deb -q "$download_url"
 
   echo "Installing package..."
