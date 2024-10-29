@@ -8,12 +8,11 @@ on:
 
 env:
   NODE_VERSION: '20.x'
-  RUNNER_OS: ubuntu-22.04
 
 jobs:
   versioning:
     name: Versioning
-    runs-on: ${{ env.RUNNER_OS }}
+    runs-on: ubuntu-22.04
     env:
       TAG: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('v0.0.0-{0}', github.run_id) }}
     outputs:
@@ -28,7 +27,7 @@ jobs:
   build_frontend:
     name: Build Frontend
     needs: versioning
-    runs-on: ${{ env.RUNNER_OS }}
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
@@ -55,7 +54,7 @@ jobs:
   build_binary:
     name: Build Binary
     needs: build_frontend
-    runs-on: ${{ env.RUNNER_OS }}
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         arch: [amd64, arm64]
