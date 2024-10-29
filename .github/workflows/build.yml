@@ -48,12 +48,12 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ jobs.versioning.outputs.build_name }}_frontend
+          name: ${{ needs.versioning.outputs.build_name }}_frontend
           path: frontend/dist/
 
   build_binary:
     name: Build Binary
-    needs: build_frontend
+    needs: [versioning, build_frontend]
     runs-on: ubuntu-22.04
     strategy:
       matrix:
@@ -69,15 +69,15 @@ jobs:
             gcc_command: aarch64-linux-gnu-gcc
             ports: true
     env:
-      BIN_NAME: ${{ jobs.versioning.outputs.build_name }}_${{ matrix.arch }}
-      ARTIFACT_NAME: ${{ jobs.versioning.outputs.build_name }}_bin_${{ matrix.arch }}
+      BIN_NAME: ${{ needs.versioning.outputs.build_name }}_${{ matrix.arch }}
+      ARTIFACT_NAME: ${{ needs.versioning.outputs.build_name }}_bin_${{ matrix.arch }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Download Frontend
         uses: actions/download-artifact@v4
         with:
-          name: ${{ jobs.versioning.outputs.build_name }}_frontend
+          name: ${{ needs.versioning.outputs.build_name }}_frontend
           path: frontend/dist
           merge-multiple: true
 
@@ -126,7 +126,7 @@ jobs:
           package: ${{ github.event.repository.name }}
           package_root: .debpkg
           maintainer: ${{ github.repository_owner }}
-          version: ${{ jobs.versioning.outputs.version }}
+          version: ${{ needs.versioning.outputs.version }}
           arch: ${{ matrix.arch }}
           desc: Open-Source Jukebox Software
 
