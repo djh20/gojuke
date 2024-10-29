@@ -3,4 +3,8 @@
 # Allow application to use port 80
 setcap 'cap_net_bind_service=+ep' /usr/bin/openjukebox
 
+# Reload units and restart openjukebox service
+deb-systemd-invoke --user daemon-reload
+deb-systemd-invoke --user restart openjukebox
+
 exit 0

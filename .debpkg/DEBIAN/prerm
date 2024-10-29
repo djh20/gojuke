@@ -1,0 +1,4 @@
+#!/bin/bash
+deb-systemd-invoke --user stop openjukebox
+
+exit 0

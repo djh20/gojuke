@@ -116,7 +116,7 @@ jobs:
 
       - name: Prepare Debian Package
         run: |
-          chmod +x .debpkg/DEBIAN/postinst
+          chmod +x .debpkg/DEBIAN/*
           mkdir -p .debpkg/usr/bin
           cp dist/${{ env.BIN_NAME }} .debpkg/usr/bin/openjukebox
       
