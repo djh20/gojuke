@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - '*.*.*'
   workflow_dispatch:
 
 env:
@@ -14,7 +14,7 @@ jobs:
     name: Versioning
     runs-on: ubuntu-22.04
     env:
-      TAG: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('v0.0.0-{0}', github.run_id) }}
+      VERSION: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || format('0.0.0-{0}', github.run_id) }}
     outputs:
       version: ${{ steps.format_version.outputs.version }}
       build_name: ${{ github.event.repository.name }}_${{ steps.format_version.outputs.version }}
@@ -22,7 +22,8 @@ jobs:
       - name: Format Version
         id: format_version
         run: |
-          echo "version=${TAG#v}" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
 
   build_frontend:
     name: Build Frontend
