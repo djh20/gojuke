@@ -1,4 +1,7 @@
 #!/bin/bash
+
+# Download: curl -fsSL https://raw.githubusercontent.com/djh20/openjukebox/main/scripts/install.sh -o install-openjukebox.sh
+
 if [[ $(/usr/bin/id -u) -ne 0 ]]; then
   echo "Must be run as root"
   exit
@@ -51,7 +54,7 @@ if [ "$download_url" != "" ]; then
   wget -O /tmp/$package.deb -q "$download_url"
 
   echo "Installing package..."
-  dpkg -i /tmp/$package.deb
+  apt-get install -y /tmp/$package.deb
 
 else
   echo "Failed to find compatible download URL"
