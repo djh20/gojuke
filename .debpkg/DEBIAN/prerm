@@ -3,7 +3,4 @@
 # Stop service for all users
 deb-systemd-invoke --user stop openjukebox.service
 
-# Keep state on whether the service was enabled/disabled
-deb-systemd-helper --user mask openjukebox.service
-
 exit 0

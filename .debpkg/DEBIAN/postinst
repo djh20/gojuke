@@ -3,10 +3,7 @@
 # Allow application to use port 80
 setcap 'cap_net_bind_service=+ep' /usr/bin/openjukebox
 
-# Restore state on whether the service was enabled/disabled
-deb-systemd-helper --user unmask openjukebox.service
-
-# Restart service
-deb-systemd-invoke --user restart openjukebox.service
+# Restart service (only for users with service enabled)
+deb-systemd-invoke --user restart openjukebox.service 2>/dev/null
 
 exit 0
