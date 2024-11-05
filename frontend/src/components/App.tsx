@@ -12,11 +12,9 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <DataProvider>
-        <main>
-          <h1>Jukebox</h1>
-          <PlaybackControls />
-          <TrackList />
-        </main>
+        <h1>Jukebox</h1>
+        <PlaybackControls />
+        <TrackList />
       </DataProvider>
     </QueryClientProvider>
   );

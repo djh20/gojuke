@@ -4,7 +4,7 @@ import { DataContext } from "../context/DataContext";
 import { ReactElement } from "react";
 
 interface DataProviderProps {
-  children?: ReactElement;
+  children?: ReactElement | ReactElement[];
 }
 
 function DataProvider(props: DataProviderProps) {
@@ -12,7 +12,8 @@ function DataProvider(props: DataProviderProps) {
     data: tracks,
   } = useQuery<Track[]>({
     queryKey: ["tracks"],
-    queryFn: fetchTracks
+    queryFn: fetchTracks,
+    refetchOnWindowFocus: false
   });
 
   return (

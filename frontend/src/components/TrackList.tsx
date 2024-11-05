@@ -9,10 +9,11 @@ function TrackList() {
 
   const listRef = useRef<HTMLDivElement | null>(null);
 
-  const scroll = (amount: number) => {
+  const scroll = (direction: number) => {
     if (!listRef.current) return;
 
-    listRef.current.scrollBy({top: amount})
+    const listHeight = listRef.current.offsetHeight - 50;
+    listRef.current.scrollBy({top: direction*listHeight});
   }
 
   if (!data.tracks) return <></>;
@@ -22,7 +23,7 @@ function TrackList() {
       <div className={css.tracks} ref={listRef}>
         {data.tracks.map(track => <TrackListItem key={track.id} track={track} />)}
       </div>
-      <ScrollNavigation scrollAmount={500} onScroll={scroll} />
+      <ScrollNavigation onScroll={scroll} />
     </div>
   );
 }

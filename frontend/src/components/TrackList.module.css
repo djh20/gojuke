@@ -1,6 +1,7 @@
 .list {
   display: flex;
-  height: 640px;
+  height: 0; /* Prevents list from overflowing page */
+  flex: 1;
 }
 
 .tracks {
