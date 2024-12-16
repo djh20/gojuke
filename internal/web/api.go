@@ -8,11 +8,14 @@ import (
 )
 
 func registerApiRoutes() {
-	router.GET("/api/tracks", handleTracksRequest)
+	api := router.Group("/api")
+	{
+		api.GET("/tracks", handleTracksRequest)
 
-	router.POST("/api/playback/queue", handleQueueRequest)
-	router.POST("/api/playback/volume", handleVolumeRequest)
-	router.POST("/api/playback/skip", handleSkipRequest)
+		api.POST("/playback/queue", handleQueueRequest)
+		api.POST("/playback/volume", handleVolumeRequest)
+		api.POST("/playback/skip", handleSkipRequest)
+	}
 }
 
 func handleTracksRequest(c *gin.Context) {

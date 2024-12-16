@@ -1,6 +1,6 @@
 module github.com/djh20/openjukebox
 
-go 1.23.2
+go 1.23.4
 
 require github.com/adrg/libvlc-go/v3 v3.1.6
 

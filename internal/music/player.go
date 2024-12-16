@@ -99,7 +99,10 @@ func playNextTrack() {
 			log.Fatal(err)
 		}
 
-		log.Printf("Now playing %s", track.Name)
+		// Temporary code for testing libvlc-go crash.
+		mediaLocation, err := media.Location()
+
+		log.Printf("Now playing %s", mediaLocation)
 
 		player.Play()
 

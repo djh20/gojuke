@@ -15,8 +15,8 @@ var frontend embed.FS
 
 func main() {
 	log.Println("Initializing application")
-	storage.Init()
 	config.Init()
+	storage.Init()
 	music.Init()
 	web.Init(frontend)
 

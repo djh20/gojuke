@@ -4,19 +4,25 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/djh20/openjukebox/internal/config"
 )
 
 var DataDirectory string
 
 func Init() {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		log.Fatal(err)
+	DataDirectory = config.CustomDataDirectory
+
+	if DataDirectory == "" {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		DataDirectory = filepath.Join(homeDir, "openjukebox")
 	}
 
-	DataDirectory = filepath.Join(homeDir, "openjukebox")
-
-	err = os.Mkdir(DataDirectory, os.ModePerm)
+	err := os.Mkdir(DataDirectory, os.ModePerm)
 	if err != nil && !os.IsExist(err) {
 		log.Fatal(err)
 	}
